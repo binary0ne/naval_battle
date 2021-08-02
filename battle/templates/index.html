@@ -1,0 +1,60 @@
+<head>
+	{% load static %}
+	<link href="{% static '/css/bootstrap.css' %}" rel="stylesheet"/>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="{% static '/js/bootstrap.min.js' %}"></script>
+    <title>Naval Battle: Chat {{ chat_id }}</title>
+</head>
+
+<body>
+	<div class="jumbotron text-center">
+		<h1>Naval Battle</h1>
+        <h3>Chat {{ chat_id }}</h3>
+	</div>
+	<div id='chat' class="container">
+		<div id='messages' class="h-50 d-inline-block"></div>
+		<div id="sendingPanel">
+			<p>
+                <label for='sendMessageField'></label><textarea id='sendMessageField' class="form-control"></textarea>
+			</p>
+			<p>
+				<button id='sendMessageButton' class="btn btn-primary">Send</button>
+			</p>
+		</div>
+	</div>
+</body>
+
+<script>
+
+let socket = new WebSocket('ws://localhost:8000/battle/ws/{{ chat_id }}/');
+console.log(socket);
+
+sendMessageField = document.getElementById('sendMessageField');
+sendMessageButton = document.getElementById('sendMessageButton')
+
+socket.addEventListener('message', function (event) {
+    console.log('Message from server ', event.data);
+    chatBox = document.getElementById('messages');
+    receivedMessage = JSON.parse(event.data);
+    formattedMessage = document.createElement('h6');
+    formattedTimeStamp = document.createElement('small');
+    formattedMessage.innerHTML = receivedMessage.message + ' ';
+    formattedTimeStamp.innerHTML = receivedMessage.timestamp;
+    formattedMessage.appendChild(formattedTimeStamp);
+    chatBox.appendChild(formattedMessage);
+});
+
+sendMessageButton.addEventListener('click', function () {
+    sendMessage()
+}, false);
+
+function sendMessage () {
+    text = sendMessageField.value;
+	sendMessageField.value = '';
+	array = {'message': text};
+	console.log(array);
+	socket.send(JSON.stringify(array));
+}
+
+</script>
